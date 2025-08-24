@@ -45,13 +45,13 @@
 }
 
 .transition-slower {
-  transition-duration: 1000ms !important;
+  transition-duration: 400ms !important;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
   transition-property: all !important;
 }
 
 .transition-ultra-slow {
-  transition-duration: 2000ms !important;
+  transition-duration: 400ms !important;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
   transition-property: all !important;
 }
