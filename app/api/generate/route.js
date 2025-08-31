@@ -105,16 +105,10 @@ export async function POST(req) {
             cleanContent = cleanContent.replace(/```\n?/, '').replace(/\n?```$/, '');
           }
           
-          console.log("Raw generated content:", generatedContent);
-          console.log("Cleaned content:", cleanContent);
-          
           // Try to parse as JSON for quiz
           const quizData = JSON.parse(cleanContent);
-          console.log("Parsed quiz data:", quizData);
           return NextResponse.json({ quiz: quizData });
         } catch (parseError) {
-          console.error("JSON parsing error:", parseError);
-          console.log("Failed to parse content:", generatedContent);
           // If JSON parsing fails, return as text
           return NextResponse.json({ quiz: { raw: generatedContent, error: "Failed to parse JSON" } });
         }
@@ -134,7 +128,6 @@ export async function POST(req) {
     }
 
   } catch (err) {
-    console.error("Error in generate API:", err);
     return NextResponse.json(
       { error: "Failed to generate content", details: err.message },
       { status: 500 }
