@@ -15,9 +15,19 @@ export async function POST(request) {
 
     // For localhost development - use local Python script
     // For production - use external service
-    const isProduction = process.env.NODE_ENV === "production";
+    // const isProduction = process.env.NODE_ENV === "production";
+    // const hasExternalService = process.env.PYTHON_SERVICE_URL;
 
-    if (isProduction && process.env.PYTHON_SERVICE_URL) {
+    // console.log("NODE_ENV:", process.env.NODE_ENV);
+    // console.log("PYTHON_SERVICE_URL:", process.env.PYTHON_SERVICE_URL);
+    // console.log("isProduction:", isProduction);
+    // console.log("hasExternalService:", hasExternalService);
+    // console.log(
+    //   "Will use external service:",
+    //   isProduction && hasExternalService
+    // );
+
+    if (true) {
       // Call external Python service to fetch transcript
       const result = await callExternalService(url);
 
