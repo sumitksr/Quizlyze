@@ -79,13 +79,13 @@ export default function Footer() {
             <h3 className="text-xl font-semibold text-white mb-6 pb-2 border-b border-purple-500/30 transition-all transition-slow">Support</h3>
             <ul className="space-y-4">
               <li>
-                <a href="#" className="text-gray-400 hover:text-indigo-400 transition-all transition-slow hover:translate-x-3 inline-flex items-center group">
+                <a href="https://github.com/sumitksr" className="text-gray-400 hover:text-indigo-400 transition-all transition-slow hover:translate-x-3 inline-flex items-center group">
                   <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 group-hover:bg-indigo-400 transition-all transition-slow group-hover:scale-150"></span>
-                  <span className="transition-all transition-slow group-hover:translate-x-1">Help Center</span>
+                  <span className="transition-all transition-slow group-hover:translate-x-1">Github</span>
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-purple-400 transition-all transition-slow hover:translate-x-3 inline-flex items-center group">
+                <a href="http://sumitksr.vercel.app/" className="text-gray-400 hover:text-purple-400 transition-all transition-slow hover:translate-x-3 inline-flex items-center group">
                   <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 group-hover:bg-purple-400 transition-all transition-slow group-hover:scale-150"></span>
                   <span className="transition-all transition-slow group-hover:translate-x-1">Contact Us</span>
                 </a>

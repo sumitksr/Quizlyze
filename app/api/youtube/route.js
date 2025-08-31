@@ -1,47 +1,77 @@
-// app/api/youtube/route.js
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { spawn } from 'child_process';
+import path from 'path';
 
-export async function POST(req) {
+export async function POST(request) {
   try {
-    const { url } = await req.json(); // 👈 read body
-    const API_KEY = process.env.YOUTUBE_API_KEY;
+    const { url } = await request.json();
 
     if (!url) {
-      return NextResponse.json({ error: "Missing YouTube URL" }, { status: 400 });
+      return NextResponse.json(
+        { error: 'YouTube URL is required' },
+        { status: 400 }
+      );
     }
 
-    // ✅ Extract videoId
-    const match = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if (!match) {
-      return NextResponse.json({ error: "Invalid YouTube URL" }, { status: 400 });
-    }
-    const id = match[1];
-
-    // 1️⃣ Fetch video details
-    const videoUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${id}&key=${API_KEY}`;
-    const videoRes = await fetch(videoUrl);
-    const videoData = await videoRes.json();
-
-    if (!videoData.items || videoData.items.length === 0) {
-      return NextResponse.json({ error: "Video not found" }, { status: 404 });
+    // Call Python script to fetch transcript
+    const result = await callPythonScript(url);
+    
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Failed to fetch YouTube transcript' },
+        { status: 404 }
+      );
     }
 
-    const snippet = videoData.items[0].snippet;
-
-    // 2️⃣ Fetch captions metadata
-    const captionsUrl = `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${id}&key=${API_KEY}`;
-    const captionsRes = await fetch(captionsUrl);
-    const captionsData = await captionsRes.json();
-
-    // 3️⃣ Return response
     return NextResponse.json({
-      videoId: id,
-      title: snippet.title,
-      description: snippet.description,
-      captions: captionsData.items || [],
+      transcript: result.transcript,
+      snippets: result.snippets,
+      videoId: result.video_id
     });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+
+  } catch (error) {
+    console.error('YouTube transcript error:', error);
+    
+    return NextResponse.json(
+      { error: 'Failed to fetch YouTube transcript', details: error.message },
+      { status: 500 }
+    );
   }
 }
+
+function callPythonScript(url) {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(process.cwd(), 'scripts', 'youtube_fetcher.py');
+    const pythonProcess = spawn('python', [scriptPath, url]);
+    
+    let dataString = '';
+    let errorString = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      dataString += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      errorString += data.toString();
+    });
+
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        resolve({ success: false, error: `Python script failed: ${errorString}` });
+        return;
+      }
+
+      try {
+        const result = JSON.parse(dataString);
+        resolve(result);
+      } catch (parseError) {
+        resolve({ success: false, error: 'Failed to parse Python script output' });
+      }
+    });
+
+    pythonProcess.on('error', (error) => {
+      resolve({ success: false, error: `Failed to start Python process: ${error.message}` });
+    });
+  });
+}
+

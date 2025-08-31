@@ -8,6 +8,12 @@ export default function ContentForm({
   buttonIcon = null,
   title = "Content Processor",
   description = "Upload PDFs, paste YouTube URLs, or input text",
+  showNumberInput = false,
+  numberInputLabel = "Number of Items",
+  numberInputValue = 10,
+  onNumberChange = () => {},
+  minNumber = 1,
+  maxNumber = 50,
 }) {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,6 +106,33 @@ export default function ContentForm({
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all transition-slow resize-none bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
+
+          {/* Number Input */}
+          {showNumberInput && (
+            <div>
+              <label
+                htmlFor="number-input"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-all transition-slow"
+              >
+                {numberInputLabel}
+              </label>
+              <input
+                type="number"
+                id="number-input"
+                name="number-input"
+                min={minNumber}
+                max={maxNumber}
+                value={numberInputValue}
+                onChange={(e) =>
+                  onNumberChange(parseInt(e.target.value) || minNumber)
+                }
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all transition-slow bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white"
+              />
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Choose between {minNumber} and {maxNumber}
+              </p>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="pt-4">

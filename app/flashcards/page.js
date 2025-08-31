@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { processContent } from "../../lib/contentFetcher";
+import { generateFlashcards } from "../../lib/generateFlashcards";
 import ContentForm from "../../components/ContentForm";
+import FlashcardComponent from "../../components/FlashcardComponent";
 
 export default function FlashcardsPage() {
   const [flashcards, setFlashcards] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [numCards, setNumCards] = useState(15);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -20,25 +22,35 @@ export default function FlashcardsPage() {
       const youtubeUrl = document.getElementById("youtube-url").value;
       const textContent = document.getElementById("text-content").value;
 
-      // Use shared utility to process content
-      const result = await processContent(file, youtubeUrl, textContent, 'flashcards', {
-        numCards: 15
-      });
+      // Generate flashcards using the dedicated function
+      const result = await generateFlashcards(
+        file,
+        youtubeUrl,
+        textContent,
+        numCards
+      );
       setFlashcards(result);
-
     } catch (err) {
       console.error("Error:", err);
-      setError(
-        err.message || "An error occurred while generating flashcards"
-      );
+      setError(err.message || "An error occurred while generating flashcards");
     } finally {
       setLoading(false);
     }
   }
 
   const flashcardIcon = (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+      />
     </svg>
   );
 
@@ -51,6 +63,12 @@ export default function FlashcardsPage() {
         buttonIcon={flashcardIcon}
         title="AI Flashcard Generator"
         description="Upload PDFs, paste YouTube URLs, or input text to generate study flashcards"
+        showNumberInput={true}
+        numberInputLabel="Number of Flashcards"
+        numberInputValue={numCards}
+        onNumberChange={setNumCards}
+        minNumber={5}
+        maxNumber={50}
       />
 
       {/* Flashcards Output */}
@@ -117,14 +135,7 @@ export default function FlashcardsPage() {
             )}
 
             {flashcards && !loading && (
-              <div className="space-y-4">
-                <p className="text-gray-800 dark:text-gray-200">
-                  Flashcards generated successfully! (You'll need to create the /api/flashcards endpoint)
-                </p>
-                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm overflow-auto">
-                  {JSON.stringify(flashcards, null, 2)}
-                </pre>
-              </div>
+              <FlashcardComponent flashcardsData={flashcards} />
             )}
 
             {!flashcards && !loading && !error && (

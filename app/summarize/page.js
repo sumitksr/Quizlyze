@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { processContent } from "../../lib/contentFetcher";
+import { generateSummary } from "../../lib/generateSummary";
 
 export default function SummarizePage() {
   const [summary, setSummary] = useState("");
@@ -19,8 +19,8 @@ export default function SummarizePage() {
       const youtubeUrl = document.getElementById("youtube-url").value;
       const textContent = document.getElementById("text-content").value;
 
-      // Use shared utility to process content
-      const result = await processContent(file, youtubeUrl, textContent, 'summary');
+      // Generate summary using the dedicated function
+      const result = await generateSummary(file, youtubeUrl, textContent);
       setSummary(result);
 
     } catch (err) {

@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { processContent } from "../../lib/contentFetcher";
+import { generateQuiz } from "../../lib/generateQuiz";
 import ContentForm from "../../components/ContentForm";
+import QuizComponent from "../../components/QuizComponent";
 
 export default function QuizPage() {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [numQuestions, setNumQuestions] = useState(10);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -20,10 +22,8 @@ export default function QuizPage() {
       const youtubeUrl = document.getElementById("youtube-url").value;
       const textContent = document.getElementById("text-content").value;
 
-      // Use shared utility to process content
-      const result = await processContent(file, youtubeUrl, textContent, 'quiz', {
-        numQuestions: 10
-      });
+      // Generate quiz using the dedicated function
+      const result = await generateQuiz(file, youtubeUrl, textContent, numQuestions);
       setQuiz(result);
 
     } catch (err) {
@@ -38,7 +38,7 @@ export default function QuizPage() {
 
   const quizIcon = (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 
@@ -50,7 +50,13 @@ export default function QuizPage() {
         buttonText="Generate Quiz"
         buttonIcon={quizIcon}
         title="AI Quiz Generator"
-        description="Upload PDFs, paste YouTube URLs, or input text to generate interactive quizzes"
+        description="Upload PDFs, paste YouTube URLs, or input text to generate quizzes"
+        showNumberInput={true}
+        numberInputLabel="Number of Questions"
+        numberInputValue={numQuestions}
+        onNumberChange={setNumQuestions}
+        minNumber={5}
+        maxNumber={50}
       />
 
       {/* Quiz Output */}
@@ -117,14 +123,7 @@ export default function QuizPage() {
             )}
 
             {quiz && !loading && (
-              <div className="space-y-4">
-                <p className="text-gray-800 dark:text-gray-200">
-                  Quiz generated successfully! (You'll need to create the /api/quiz endpoint)
-                </p>
-                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm overflow-auto">
-                  {JSON.stringify(quiz, null, 2)}
-                </pre>
-              </div>
+              <QuizComponent quizData={quiz} />
             )}
 
             {!quiz && !loading && !error && (
