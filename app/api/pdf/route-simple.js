@@ -33,9 +33,7 @@ export async function POST(req) {
 
     const arrayBuffer = await response.arrayBuffer();
     console.log("Received data size:", arrayBuffer.byteLength, "bytes");
-    
-    // For now, let's just return that we successfully downloaded the PDF
-    // and suggest using an external service for text extraction
+ 
     return NextResponse.json({
       success: true,
       message: "PDF downloaded successfully",

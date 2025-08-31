@@ -1,123 +1,142 @@
-import React from 'react'
+"use client";
+import React, { useState } from "react";
+import { processContent } from "../../lib/contentFetcher";
+import ContentForm from "../../components/ContentForm";
 
 export default function QuizPage() {
+  const [quiz, setQuiz] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    setQuiz(null);
+
+    try {
+      // Get form inputs
+      const file = document.getElementById("file-upload").files[0];
+      const youtubeUrl = document.getElementById("youtube-url").value;
+      const textContent = document.getElementById("text-content").value;
+
+      // Use shared utility to process content
+      const result = await processContent(file, youtubeUrl, textContent, 'quiz', {
+        numQuestions: 10
+      });
+      setQuiz(result);
+
+    } catch (err) {
+      console.error("Error:", err);
+      setError(
+        err.message || "An error occurred while generating the quiz"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const quizIcon = (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-100 dark:from-black dark:via-black dark:to-gray-900 py-12 transition-all transition-slow">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-black dark:via-black dark:to-gray-900 py-12 transition-all transition-slow">
+      <ContentForm
+        onSubmit={handleSubmit}
+        loading={loading}
+        buttonText="Generate Quiz"
+        buttonIcon={quizIcon}
+        title="AI Quiz Generator"
+        description="Upload PDFs, paste YouTube URLs, or input text to generate interactive quizzes"
+      />
+
+      {/* Quiz Output */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 transition-all transition-slow">
-            Quiz Generator
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 transition-all transition-slow">
-            Create interactive quizzes from your content to test knowledge and reinforce learning
-          </p>
-        </div>
-
-        {/* Quiz Creation Options */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {/* From Summary */}
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all transition-slow transform hover:scale-105 border border-white/20 dark:border-gray-800/20">
-            <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-all transition-slow">
-              <svg className="w-8 h-8 text-indigo-600 dark:text-indigo-400 transition-all transition-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 transition-all transition-slow">From Summary</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 transition-all transition-slow">
-              Generate a quiz based on a previously created summary or content analysis.
-            </p>
-            <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 px-6 rounded-xl font-semibold transition-all transition-slow transform hover:scale-105 shadow-lg hover:shadow-xl">
-              Use Summary
-            </button>
-          </div>
-
-          {/* From New Content */}
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all transition-slow transform hover:scale-105 border border-white/20 dark:border-gray-800/20">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-all transition-slow">
-              <svg className="w-8 h-8 text-purple-600 dark:text-purple-400 transition-all transition-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 transition-all transition-slow">From New Content</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6 transition-all transition-slow">
-              Create a quiz directly from PDFs, YouTube videos, or text content.
-            </p>
-            <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-6 rounded-xl font-semibold transition-all transition-slow transform hover:scale-105 shadow-lg hover:shadow-xl">
-              Add Content
-            </button>
-          </div>
-        </div>
-
-        {/* Quiz Configuration */}
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8 border border-white/20 dark:border-gray-800/20 transition-all transition-slow">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 transition-all transition-slow">Quiz Settings</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-all transition-slow">
-                Number of Questions
-              </label>
-              <select className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all transition-slow bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white">
-                <option>5 questions</option>
-                <option>10 questions</option>
-                <option>15 questions</option>
-                <option>20 questions</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-all transition-slow">
-                Difficulty Level
-              </label>
-              <select className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all transition-slow bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white">
-                <option>Easy</option>
-                <option>Medium</option>
-                <option>Hard</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-all transition-slow">
-                Question Types
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input type="checkbox" className="rounded border-gray-300 dark:border-gray-700 text-purple-600 dark:text-purple-400 focus:ring-purple-500 dark:focus:ring-purple-400 bg-white/50 dark:bg-gray-800/50 transition-all transition-slow" defaultChecked />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 transition-all transition-slow">Multiple Choice</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="rounded border-gray-300 dark:border-gray-700 text-purple-600 dark:text-purple-400 focus:ring-purple-500 dark:focus:ring-purple-400 bg-white/50 dark:bg-gray-800/50 transition-all transition-slow" defaultChecked />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 transition-all transition-slow">True/False</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="rounded border-gray-300 dark:border-gray-700 text-purple-600 dark:text-purple-400 focus:ring-purple-500 dark:focus:ring-purple-400 bg-white/50 dark:bg-gray-800/50 transition-all transition-slow" />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 transition-all transition-slow">Fill in the Blank</span>
-                </label>
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20 dark:border-gray-800/20 transition-all transition-slow">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 transition-all transition-slow">
+            Generated Quiz
+          </h2>
+          <div className="bg-gradient-to-br from-gray-50 to-indigo-50/30 dark:from-gray-800/50 dark:to-indigo-900/20 rounded-xl p-6 min-h-[200px] border border-gray-200/50 dark:border-gray-700/50 transition-all transition-slow">
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                <div className="flex">
+                  <svg
+                    className="w-5 h-5 text-red-400 mt-0.5 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                      Error
+                    </h3>
+                    <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                      {error}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-all transition-slow">
-                Time Limit (minutes)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="120"
-                defaultValue="15"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all transition-slow bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white"
-              />
-            </div>
-          </div>
-        </div>
+            )}
 
-        {/* Generate Quiz Button */}
-        <div className="text-center">
-          <button className="bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-700 hover:via-pink-700 hover:to-indigo-700 text-white py-4 px-12 rounded-2xl font-semibold text-xl transition-all transition-slow transform hover:scale-105 flex items-center justify-center space-x-3 mx-auto shadow-xl hover:shadow-2xl">
-            <svg className="w-6 h-6 transition-all transition-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <span className="transition-all transition-slow">Generate Quiz</span>
-          </button>
+            {loading && (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-8 w-8 text-indigo-600 mr-3"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Generating your quiz...
+                </p>
+              </div>
+            )}
+
+            {quiz && !loading && (
+              <div className="space-y-4">
+                <p className="text-gray-800 dark:text-gray-200">
+                  Quiz generated successfully! (You'll need to create the /api/quiz endpoint)
+                </p>
+                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm overflow-auto">
+                  {JSON.stringify(quiz, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            {!quiz && !loading && !error && (
+              <div className="flex items-center justify-center">
+                <p className="text-gray-500 dark:text-gray-400 text-center">
+                  Your AI-generated quiz will appear here after processing
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
