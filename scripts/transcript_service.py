@@ -40,7 +40,17 @@ def get_transcript(video_id: str = None, url: str = None):
             video_id = extract_video_id(url)
         
         if not video_id:
-            raise HTTPException(status_code=400, detail="Missing or invalid video_id/url parameter")
+            raise HTTPException(
+                status_code=400, 
+                detail={
+                    "error": "Missing or invalid video_id/url parameter",
+                    "usage": "Use ?video_id=VIDEO_ID or ?url=YOUTUBE_URL",
+                    "examples": [
+                        "/transcript?video_id=dQw4w9WgXcQ",
+                        "/transcript?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    ]
+                }
+            )
         
         # Fetch transcript using youtube-transcript-api
         transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
@@ -71,8 +81,26 @@ def get_transcript(video_id: str = None, url: str = None):
             'video_id': video_id
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch transcript: {str(e)}")
+        # More detailed error handling
+        error_msg = str(e)
+        if "No transcript found" in error_msg:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No transcript available for video ID: {video_id}"
+            )
+        elif "Video unavailable" in error_msg:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Video not found or unavailable: {video_id}"
+            )
+        else:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to fetch transcript: {error_msg}"
+            )
 
 @app.get("/health")
 def health_check():
