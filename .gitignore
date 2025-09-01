@@ -12,8 +12,8 @@
 
 # testing
 /coverage
-
-# next.js
+/.kiro
+# nxt.js
 /.next/
 /out/
 
