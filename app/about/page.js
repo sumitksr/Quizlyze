@@ -28,12 +28,12 @@ export default function AboutPage() {
           <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6 transition-all transition-slow">
             Quizlyze is an innovative AI-powered learning platform that
             revolutionizes how you consume and retain information. Whether
-            you're a student, professional, or lifelong learner, Quizlyze
+            you&apos;re a student, professional, or lifelong learner, Quizlyze
             transforms your learning materials into engaging, interactive
             experiences that enhance comprehension and retention.
           </p>
           <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed transition-all transition-slow">
-            Using advanced AI technology powered by Google's Gemini, Quizlyze
+            Using advanced AI technology powered by Google&apos;s Gemini, Quizlyze
             can process various types of content and generate personalized
             learning materials tailored to your needs.
           </p>
@@ -457,7 +457,7 @@ export default function AboutPage() {
                   <strong>Important:</strong> Due to deployment limitations on
                   platforms like Vercel and shared IP restrictions on services
                   like Render, the automatic YouTube transcript extraction may
-                  not always work reliably. YouTube's API sometimes blocks
+                  not always work reliably. YouTube&apos;s API sometimes blocks
                   requests from shared server IPs.
                 </p>
                 <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
@@ -465,7 +465,7 @@ export default function AboutPage() {
                     Manual Workaround Available:
                   </h4>
                   <p className="text-sm mb-3">
-                    If the YouTube URL doesn't work automatically, you can
+                    If the YouTube URL doesn&apos;t work automatically, you can
                     manually extract the transcript using Python:
                   </p>
                   <div className="bg-gray-900 rounded-md p-3 text-green-400 font-mono text-xs overflow-x-auto mb-3">
@@ -475,16 +475,16 @@ export default function AboutPage() {
                     </div>
                     <div className="mt-1">
                       ytt_api = YouTubeTranscriptApi()
-                      transcript = ytt_api.fetch("YOUR_ID")
+                      transcript = ytt_api.fetch(&quot;YOUR_ID&quot;)
                     </div>
                     <div className="mt-1">
-                      text = ' '.join([item.text for item in transcript])
+                      text = &apos; &apos;.join([item.text for item in transcript])
                       print(text)
                     </div>
                   </div>
                   <p className="text-sm text-amber-600 dark:text-amber-400">
                     Simply run this code locally, copy the output, and paste it
-                    into the "Text Content" box on any page.
+                    into the &quot;Text Content&quot; box on any page.
                   </p>
                 </div>
                 <p className="text-sm">
