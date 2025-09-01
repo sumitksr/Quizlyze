@@ -53,23 +53,30 @@ def get_transcript(video_id: str = None, url: str = None):
             )
         
         # Fetch transcript using youtube-transcript-api
-        transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
+        ytt_api = YouTubeTranscriptApi()
+        transcript_data = ytt_api.fetch(video_id)
+
+        print("DEBUG: type of transcript_data =", type(transcript_data))
+        if isinstance(transcript_data, list) and len(transcript_data) > 0:
+            print("DEBUG: type of first item =", type(transcript_data[0]))
+            print("DEBUG: first item =", transcript_data[0])
+
         
         snippets = []
         full_text_parts = []
-        
+
         for item in transcript_data:
             snippet = {
-                'text': item['text'],
-                'start': item['start'],
-                'duration': item['duration']
+                'text': item.text,
+                'start': item.start,
+                'duration': item.duration
             }
             snippets.append(snippet)
-            
-            # Clean up text for full transcript
-            clean_text = item['text'].strip()
+
+            clean_text = item.text.strip()
             if clean_text and clean_text not in ['[Music]', '[Applause]', '[Laughter]']:
                 full_text_parts.append(clean_text)
+
         
         # Join all text parts
         full_text = ' '.join(full_text_parts)
