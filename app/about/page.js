@@ -488,7 +488,7 @@ export default function AboutPage() {
                   </p>
                 </div>
                 <p className="text-sm">
-                  This ensures you can always use Quizlyze's powerful AI
+                  This ensures you can always use Quizlyze&apos;s powerful AI
                   features regardless of API limitations, giving you full
                   control over your content processing.
                 </p>
