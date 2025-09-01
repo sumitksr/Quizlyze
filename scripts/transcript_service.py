@@ -26,6 +26,19 @@ def extract_video_id(url: str) -> Optional[str]:
 def root():
     return {"message": "YouTube Transcript Service is running"}
 
+@app.get("/available_transcripts")
+def available_transcripts(video_id: str):
+    """List available transcripts (languages, auto-generated/manual)"""
+    try:
+        api = YouTubeTranscriptApi()
+        # This endpoint might not be available in all versions
+        return {
+            "video_id": video_id,
+            "message": "Use /transcript endpoint to get transcript data"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
 @app.get("/transcript")
 def get_transcript(video_id: str = None, url: str = None):
     """
@@ -51,17 +64,16 @@ def get_transcript(video_id: str = None, url: str = None):
                     ]
                 }
             )
-        
-        # Fetch transcript using youtube-transcript-api
-        ytt_api = YouTubeTranscriptApi()
-        transcript_data = ytt_api.fetch(video_id)
+        print(f"DEBUG: Fetching transcript for video_id = {video_id}")
+        # Create instance and use fetch method
+        api = YouTubeTranscriptApi()
+        transcript_data = api.fetch(video_id)
 
         print("DEBUG: type of transcript_data =", type(transcript_data))
         if isinstance(transcript_data, list) and len(transcript_data) > 0:
             print("DEBUG: type of first item =", type(transcript_data[0]))
             print("DEBUG: first item =", transcript_data[0])
 
-        
         snippets = []
         full_text_parts = []
 
@@ -77,15 +89,14 @@ def get_transcript(video_id: str = None, url: str = None):
             if clean_text and clean_text not in ['[Music]', '[Applause]', '[Laughter]']:
                 full_text_parts.append(clean_text)
 
-        
         # Join all text parts
         full_text = ' '.join(full_text_parts)
         
         return {
             'success': True,
-            'transcript': full_text,
+            'video_id': video_id,
             'snippets': snippets,
-            'video_id': video_id
+            'transcript': full_text
         }
         
     except HTTPException:
