@@ -18,7 +18,7 @@ export async function POST(req) {
     // Generate different prompts based on action
     switch (action) {
       case 'summary':
-        prompt = `Summarize the following text in a clear and concise manner:\n\n${data}`;
+        prompt = `Create a well-structured summary of the following content. Use clear headings and bullet points where appropriate. Format the response in markdown for better readability:\n\n${data}`;
         break;
         
       case 'quiz':

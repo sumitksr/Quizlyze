@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { generateSummary } from "../../lib/generateSummary";
 
 export default function SummarizePage() {
@@ -18,11 +20,14 @@ export default function SummarizePage() {
       const file = document.getElementById("file-upload").files[0];
       const youtubeUrl = document.getElementById("youtube-url").value;
       const textContent = document.getElementById("text-content").value;
-
       // Generate summary using the dedicated function
-      const result = await generateSummary(file, youtubeUrl, textContent);
+      const result = await generateSummary(
+        file,
+        youtubeUrl,
+        textContent,
+        null
+      );
       setSummary(result);
-
     } catch (err) {
       console.error("Error:", err);
       setError(
@@ -104,6 +109,21 @@ export default function SummarizePage() {
                 placeholder="https://www.youtube.com/watch?v=..."
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all transition-slow bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
+            </div>
+
+            {/* YouTube URL Notice */}
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4">
+              <div className="flex items-center">
+                <svg className="w-4 h-4 text-amber-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  If YouTube URL doesn't work, 
+                  <Link href="/about#youtube-integration" className="font-medium underline hover:text-amber-800 dark:hover:text-amber-200 ml-1">
+                    see manual workaround instructions
+                  </Link>
+                </p>
+              </div>
             </div>
 
             {/* Text Input */}
@@ -244,9 +264,47 @@ export default function SummarizePage() {
 
             {summary && !loading && (
               <div className="prose dark:prose-invert max-w-none">
-                <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => (
+                      <p className="mb-4 text-gray-800 dark:text-gray-200 leading-relaxed">
+                        {children}
+                      </p>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-semibold text-gray-900 dark:text-white">
+                        {children}
+                      </strong>
+                    ),
+                    h1: ({ children }) => (
+                      <h1 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                        {children}
+                      </h2>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="list-disc pl-6 mb-4 space-y-1">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="list-decimal pl-6 mb-4 space-y-1">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => (
+                      <li className="text-gray-800 dark:text-gray-200">
+                        {children}
+                      </li>
+                    ),
+                  }}
+                >
                   {summary}
-                </p>
+                </ReactMarkdown>
               </div>
             )}
 

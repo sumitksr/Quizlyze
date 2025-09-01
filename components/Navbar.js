@@ -44,6 +44,13 @@ export default function Navbar() {
                 <span className="relative z-10">Flashcards</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-rose-500/10 rounded-md transform scale-x-0 group-hover:scale-x-100 transition-transform transition-slower origin-left"></div>
               </Link>
+              <Link
+                href="/about"
+                className="text-gray-300 hover:text-emerald-400 px-3 py-2 rounded-md text-sm font-medium transition-all transition-slower hover:scale-105 hover:bg-gray-900/50 hover:shadow-lg hover:shadow-emerald-500/20 relative overflow-hidden group"
+              >
+                <span className="relative z-10">About</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-md transform scale-x-0 group-hover:scale-x-100 transition-transform transition-slower origin-left"></div>
+              </Link>
             </div>
           </div>
 

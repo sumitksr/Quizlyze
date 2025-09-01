@@ -22,11 +22,13 @@ export default function FlashcardsPage() {
       const youtubeUrl = document.getElementById("youtube-url").value;
       const textContent = document.getElementById("text-content").value;
 
+
       // Generate flashcards using the dedicated function
       const result = await generateFlashcards(
         file,
         youtubeUrl,
         textContent,
+        null,
         numCards
       );
       setFlashcards(result);
