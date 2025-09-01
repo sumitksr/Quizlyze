@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { spawn } from "child_process";
-import path from "path";
+// import { spawn } from "child_process";
+// import path from "path";
 
 export async function POST(request) {
   try {
@@ -13,21 +13,6 @@ export async function POST(request) {
       );
     }
 
-    // For localhost development - use local Python script
-    // For production - use external service
-    // const isProduction = process.env.NODE_ENV === "production";
-    // const hasExternalService = process.env.PYTHON_SERVICE_URL;
-
-    // console.log("NODE_ENV:", process.env.NODE_ENV);
-    // console.log("PYTHON_SERVICE_URL:", process.env.PYTHON_SERVICE_URL);
-    // console.log("isProduction:", isProduction);
-    // console.log("hasExternalService:", hasExternalService);
-    // console.log(
-    //   "Will use external service:",
-    //   isProduction && hasExternalService
-    // );
-
-    if (true) {
       // Call external Python service to fetch transcript
       const result = await callExternalService(url);
 
@@ -43,23 +28,7 @@ export async function POST(request) {
         snippets: result.snippets,
         videoId: result.video_id,
       });
-    } else {
-      // Call local Python script for development
-      const result = await callPythonScript(url);
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to fetch YouTube transcript" },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json({
-        transcript: result.transcript,
-        snippets: result.snippets,
-        videoId: result.video_id,
-      });
-    }
+    
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch YouTube transcript", details: error.message },
@@ -102,51 +71,4 @@ async function callExternalService(url) {
   }
 }
 
-function callPythonScript(url) {
-  return new Promise((resolve) => {
-    const scriptPath = path.join(
-      process.cwd(),
-      "scripts",
-      "youtube_fetcher.py"
-    );
-    const pythonProcess = spawn("python", [scriptPath, url]);
 
-    let dataString = "";
-    let errorString = "";
-
-    pythonProcess.stdout.on("data", (data) => {
-      dataString += data.toString();
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      errorString += data.toString();
-    });
-
-    pythonProcess.on("close", (code) => {
-      if (code !== 0) {
-        resolve({
-          success: false,
-          error: `Python script failed: ${errorString}`,
-        });
-        return;
-      }
-
-      try {
-        const result = JSON.parse(dataString);
-        resolve(result);
-      } catch (parseError) {
-        resolve({
-          success: false,
-          error: "Failed to parse Python script output",
-        });
-      }
-    });
-
-    pythonProcess.on("error", (error) => {
-      resolve({
-        success: false,
-        error: `Failed to start Python process: ${error.message}`,
-      });
-    });
-  });
-}
