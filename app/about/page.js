@@ -471,14 +471,18 @@ export default function AboutPage() {
                   <div className="bg-gray-900 rounded-md p-3 text-green-400 font-mono text-xs overflow-x-auto mb-3">
                     <div>pip install youtube-transcript-api</div>
                     <div className="mt-1">
-                      from youtube_transcript_api import YouTubeTranscriptApi
+                      from youtube_transcript_api 
+                      <br />
+                      import YouTubeTranscriptApi
                     </div>
                     <div className="mt-1">
                       ytt_api = YouTubeTranscriptApi()
+                      <br />
                       transcript = ytt_api.fetch(&quot;YOUR_ID&quot;)
                     </div>
                     <div className="mt-1">
                       text = &apos; &apos;.join([item.text for item in transcript])
+                      <br />
                       print(text)
                     </div>
                   </div>
