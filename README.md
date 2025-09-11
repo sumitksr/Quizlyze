@@ -75,6 +75,46 @@ Quizlyze transforms any content into structured learning material. Whether it’
 * `app/api/generate/route.js` → AI generation (summary/quiz/flashcards)
 
 ---
+## 🎥 Run the Python Transcript Service (Locally)
+
+If direct transcript fetching is blocked in your environment, run the local service and point `PYTHON_SERVICE_URL` to it.
+
+Requirements: Python 3.10+
+
+Install and run (Windows PowerShell):
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r scripts/requirements.txt
+
+# Start the FastAPI server (auto‑reload)
+uvicorn scripts.transcript_service:app --reload --host 0.0.0.0 --port 8000
+```
+
+macOS/Linux bash/zsh:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r scripts/requirements.txt
+
+# Start the FastAPI server (auto‑reload)
+uvicorn scripts.transcript_service:app --reload --host 0.0.0.0 --port 8000
+```
+
+Test endpoints:
+```bash
+curl http://localhost:8000/health
+curl "http://localhost:8000/transcript?video_id=dQw4w9WgXcQ"
+```
+
+Then set in `.env`:
+```env
+PYTHON_SERVICE_URL=http://localhost:8000
+```
+
+Vercel deployment guide for a serverless version is in `scripts/README.md`.
+
+---
 
 ## 📦 Project Structure
 
