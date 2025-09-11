@@ -66,6 +66,21 @@ export default function ContentForm({
                   type="file"
                   className="sr-only"
                   accept=".pdf"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const fileName = document.createElement('p');
+                      fileName.textContent = `Selected: ${file.name}`;
+                      fileName.className = 'mt-2 text-sm text-green-600 dark:text-green-400';
+                      const container = e.target.closest('.border-dashed');
+                      const existingFileName = container.querySelector('.file-name');
+                      if (existingFileName) {
+                        existingFileName.remove();
+                      }
+                      fileName.classList.add('file-name');
+                      container.appendChild(fileName);
+                    }
+                  }}
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-all transition-slow">
