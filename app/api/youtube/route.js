@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-// import { spawn } from "child_process";
-// import path from "path";
+import { fetchYoutubeTranscript } from "../../../lib/youtubeTranscriptFetcher";
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
@@ -13,62 +15,36 @@ export async function POST(request) {
       );
     }
 
-      // Call external Python service to fetch transcript
-      const result = await callExternalService(url);
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to fetch YouTube transcript" },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json({
-        transcript: result.transcript,
-        snippets: result.snippets,
-        videoId: result.video_id,
-      });
-    
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch YouTube transcript", details: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-async function callExternalService(url) {
-  try {
-    const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL;
-
-    const response = await fetch(
-      `${PYTHON_SERVICE_URL}/transcript?url=${encodeURIComponent(url)}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ detail: "Unknown error" }));
-      return {
-        success: false,
-        error: errorData.detail || `Service error: ${response.status}`,
-      };
+    // Validate URL format
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+    if (!youtubeRegex.test(url)) {
+      return NextResponse.json(
+        { error: "Invalid YouTube URL format" },
+        { status: 400 }
+      );
     }
 
-    const data = await response.json();
-    return data;
+    // Fetch transcript using the utility function
+    const result = await fetchYoutubeTranscript(url);
+
+    return NextResponse.json(result);
+    
   } catch (error) {
-    return {
-      success: false,
-      error: `Failed to call external service: ${error.message}`,
-    };
+    console.error('YouTube API error:', error);
+    
+    // Determine appropriate status code
+    const errorMessage = error.message || 'Unknown error';
+    let statusCode = 500;
+    
+    if (errorMessage.includes('disabled') || 
+        errorMessage.includes('No transcript available') || 
+        errorMessage.includes('unavailable')) {
+      statusCode = 404;
+    }
+    
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: statusCode }
+    );
   }
 }
-
-

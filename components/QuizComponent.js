@@ -89,7 +89,7 @@ export default function QuizComponent({ quizData }) {
                     <span className={`flex items-center justify-center w-6 h-6 rounded-full border-2 ${selectedAnswers[currentQuestion] === option.charAt(0) ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500' : 'border-gray-300 dark:border-gray-600'}`}>
                       {selectedAnswers[currentQuestion] === option.charAt(0) && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
                     </span>
-                    <span className="text-gray-800 dark:text-gray-200 flex-1">
+                    <span className="text-gray-900 dark:text-gray-100 flex-1">
                       {option.substring(2).trim()}
                     </span>
                   </label>
@@ -151,13 +151,13 @@ export default function QuizComponent({ quizData }) {
                       <span>
                         {option.charAt(0) === question.correctAnswer ? '✅' : (option.charAt(0) === selectedAnswers[index] ? '❌' : ' ')}
                       </span>
-                      <span className="text-gray-700 dark:text-gray-300">{option}</span>
+                      <span className="text-gray-900 dark:text-gray-100">{option}</span>
                     </div>
                   ))}
                 </div>
                 {question.explanation && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 p-3 rounded-md mt-3 border border-gray-200 dark:border-gray-700">
-                    <span className="font-semibold">Explanation:</span> {question.explanation}
+                  <p className="text-sm text-gray-700 dark:text-gray-200 bg-indigo-50 dark:bg-indigo-900/30 p-3 rounded-md mt-3 border border-indigo-200 dark:border-indigo-700">
+                    <span className="font-semibold text-indigo-900 dark:text-indigo-100">Explanation:</span> {question.explanation}
                   </p>
                 )}
               </div>

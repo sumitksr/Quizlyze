@@ -13,6 +13,13 @@ export async function POST(req) {
       return NextResponse.json({ error: "No action specified" }, { status: 400 });
     }
 
+    if (!GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "Gemini API key not configured", details: "Set GEMINI_API in your environment" },
+        { status: 500 }
+      );
+    }
+
     let prompt = '';
     
     // Generate different prompts based on action

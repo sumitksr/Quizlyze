@@ -75,11 +75,11 @@ export default function FlashcardsPage() {
 
       {/* Flashcards Output */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20 dark:border-gray-800/20 transition-all transition-slow">
+        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20 dark:border-gray-800/20 transition-all transition-slow">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 transition-all transition-slow">
             Generated Flashcards
           </h2>
-          <div className="bg-gradient-to-br from-gray-50 to-indigo-50/30 dark:from-gray-800/50 dark:to-indigo-900/20 rounded-xl p-6 min-h-[200px] border border-gray-200/50 dark:border-gray-700/50 transition-all transition-slow">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 min-h-[200px] border border-gray-200 dark:border-gray-700 transition-all transition-slow shadow-inner">
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
                 <div className="flex">
@@ -130,7 +130,7 @@ export default function FlashcardsPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <p className="text-gray-600 dark:text-gray-300">
+                <p className="text-gray-600 dark:text-gray-300 font-medium">
                   Creating your flashcards...
                 </p>
               </div>
@@ -141,7 +141,7 @@ export default function FlashcardsPage() {
             )}
 
             {!flashcards && !loading && !error && (
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center py-8">
                 <p className="text-gray-500 dark:text-gray-400 text-center">
                   Your AI-generated flashcards will appear here after processing
                 </p>
