@@ -88,8 +88,9 @@ export async function POST(request) {
     const arrayBuffer = await remoteRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Dynamically import pdf-parse to avoid build-time test-file errors
-    const { default: pdfParse } = await import('pdf-parse');
+    // Import the internal parser directly to bypass pdf-parse's self-test
+    // (importing 'pdf-parse' directly causes ENOENT on ./test/data/05-versions-space.pdf)
+    const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js');
     const data = await pdfParse(buffer);
 
     const cleanedText = (data.text || '')
