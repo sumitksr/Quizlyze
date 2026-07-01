@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import pdfParse from "pdf-parse";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ export async function POST(request) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-      
+
       remoteRes = await fetch(url, {
         signal: controller.signal,
         headers: {
@@ -46,7 +47,7 @@ export async function POST(request) {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 15000);
-          
+
           remoteRes = await fetch(url, {
             signal: controller.signal,
             headers: {
@@ -67,7 +68,7 @@ export async function POST(request) {
           throw retryError;
         }
       }
-      
+
       if (!remoteRes.ok) {
         return NextResponse.json(
           { error: 'Failed to download PDF from URL', details: `${remoteRes.status} ${remoteRes.statusText}` },
@@ -88,90 +89,23 @@ export async function POST(request) {
     const arrayBuffer = await remoteRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Save to temporary file and use Node.js script
-    const { writeFile, unlink } = await import('fs/promises');
-    const { join } = await import('path');
-    const { tmpdir } = await import('os');
-    const { spawn } = await import('child_process');
-    
-    const tempFilePath = join(tmpdir(), `pdf-url-${Date.now()}-${Math.random().toString(36).substring(7)}.pdf`);
-    
-    try {
-      await writeFile(tempFilePath, buffer);
+    // Parse PDF directly using pdf-parse (no child process needed)
+    const data = await pdfParse(buffer);
 
-      // Use Node.js script to parse PDF (avoids Next.js webpack issues)
-      const scriptPath = join(process.cwd(), 'scripts', 'pdf-parser.js');
-      
-      const result = await new Promise((resolve, reject) => {
-        const nodeProcess = spawn('node', [scriptPath, tempFilePath], {
-          timeout: 30000,
-          maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-        });
+    const cleanedText = (data.text || '')
+      .replace(/ +/g, ' ')
+      .replace(/\r\n|\r/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
 
-        let stdout = '';
-        let stderr = '';
-
-        nodeProcess.stdout.on('data', (data) => {
-          stdout += data.toString();
-        });
-
-        nodeProcess.stderr.on('data', (data) => {
-          stderr += data.toString();
-        });
-
-        nodeProcess.on('close', (code) => {
-          if (code === 0) {
-            try {
-              const parsed = JSON.parse(stdout);
-              resolve(parsed);
-            } catch (e) {
-              reject(new Error(`Failed to parse output: ${e.message}`));
-            }
-          } else {
-            try {
-              const errorData = JSON.parse(stderr);
-              reject(new Error(errorData.details || errorData.error || 'PDF parsing failed'));
-            } catch {
-              reject(new Error(stderr || `Process exited with code ${code}`));
-            }
-          }
-        });
-
-        nodeProcess.on('error', (error) => {
-          reject(new Error(`Failed to spawn process: ${error.message}`));
-        });
-      });
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      const cleanedText = (result.text || '')
-        .replace(/ +/g, ' ')
-        .replace(/\r\n|\r/g, '\n')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
-
-      // Clean up temp file
-      await unlink(tempFilePath);
-
-      return NextResponse.json({
-        text: cleanedText,
-        metadata: {
-          pages: result.numPages,
-          info: result.info,
-          originUrl: url,
-        },
-      });
-    } catch (cleanupError) {
-      // If temp file cleanup fails, still try to delete it
-      try {
-        await unlink(tempFilePath);
-      } catch (e) {
-        console.error('Failed to delete temp file:', e);
-      }
-      throw cleanupError;
-    }
+    return NextResponse.json({
+      text: cleanedText,
+      metadata: {
+        pages: data.numpages,
+        info: data.info,
+        originUrl: url,
+      },
+    });
   } catch (error) {
     console.error('PDF-from-URL processing error:', error);
     return NextResponse.json(

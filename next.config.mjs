@@ -2,9 +2,9 @@
 const nextConfig = {
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Exclude pdf-parse from webpack bundling on server side
-      // It will only be used in spawned Node.js processes
-      config.externals = [...(config.externals || []), 'pdf-parse', 'canvas'];
+      // canvas is a native addon – keep it external
+      // pdf-parse is now imported directly in API routes, so it must be bundled
+      config.externals = [...(config.externals || []), 'canvas'];
     }
     return config;
   },
