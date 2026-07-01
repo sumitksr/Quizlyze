@@ -1,3 +1,0 @@
-fastapi
-youtube-transcript-api
-mangum

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import pdfParse from "pdf-parse";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -89,7 +88,8 @@ export async function POST(request) {
     const arrayBuffer = await remoteRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Parse PDF directly using pdf-parse (no child process needed)
+    // Dynamically import pdf-parse to avoid build-time test-file errors
+    const { default: pdfParse } = await import('pdf-parse');
     const data = await pdfParse(buffer);
 
     const cleanedText = (data.text || '')

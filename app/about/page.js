@@ -430,77 +430,6 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* YouTube Integration Notice */}
-        <div id="youtube-integration" className="bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-12 border border-amber-200/50 dark:border-amber-800/20 transition-all transition-slow">
-          <div className="flex items-start">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/50 dark:to-orange-900/50 rounded-xl flex items-center justify-center mr-4 mt-1">
-              <svg
-                className="w-6 h-6 text-amber-600 dark:text-amber-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-4 transition-all transition-slow">
-                YouTube Integration Notice
-              </h3>
-              <div className="space-y-4 text-amber-700 dark:text-amber-300">
-                <p className="leading-relaxed">
-                  <strong>Important:</strong> Due to deployment limitations on
-                  platforms like Vercel and shared IP restrictions on services
-                  like Render, the automatic YouTube transcript extraction may
-                  not always work reliably. YouTube&apos;s API sometimes blocks
-                  requests from shared server IPs.
-                </p>
-                <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
-                  <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">
-                    Manual Workaround Available:
-                  </h4>
-                  <p className="text-sm mb-3">
-                    If the YouTube URL doesn&apos;t work automatically, you can
-                    manually extract the transcript using Python:
-                  </p>
-                  <div className="bg-gray-900 rounded-md p-3 text-green-400 font-mono text-xs overflow-x-auto mb-3">
-                    <div>pip install youtube-transcript-api</div>
-                    <div className="mt-1">
-                      from youtube_transcript_api 
-                      <br />
-                      import YouTubeTranscriptApi
-                    </div>
-                    <div className="mt-1">
-                      ytt_api = YouTubeTranscriptApi()
-                      <br />
-                      transcript = ytt_api.fetch(&quot;YOUR_ID&quot;)
-                    </div>
-                    <div className="mt-1">
-                      text = &apos; &apos;.join([item.text for item in transcript])
-                      <br />
-                      print(text)
-                    </div>
-                  </div>
-                  <p className="text-sm text-amber-600 dark:text-amber-400">
-                    Simply run this code locally, copy the output, and paste it
-                    into the &quot;Text Content&quot; box on any page.
-                  </p>
-                </div>
-                <p className="text-sm">
-                  This ensures you can always use Quizlyze&apos;s powerful AI
-                  features regardless of API limitations, giving you full
-                  control over your content processing.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Technical Features */}
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-12 border border-white/20 dark:border-gray-800/20 transition-all transition-slow">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center transition-all transition-slow">
@@ -546,10 +475,10 @@ export default function AboutPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                  YouTube Integration
+                  YouTube Video Support
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Automatic transcript extraction with manual fallback option
+                  AI-powered video content extraction and analysis
                 </p>
               </div>
             </div>
