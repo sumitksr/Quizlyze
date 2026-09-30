@@ -4,6 +4,7 @@ import { ChromaClient } from "chromadb";
 import OpenAI from "openai";
 import { createHash } from "crypto";
 import { checkRateLimit } from "@/lib/ratelimit";
+import * as cheerio from "cheerio";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,34 +36,67 @@ function makeEmbeddingFn(openai) {
 
 async function duckDuckGoSearch(query, maxResults = 6) {
   try {
-    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-    const res = await fetch(url, {
+    // POST to the legacy HTML endpoint — more reliable than GET for server-side use
+    const body = new URLSearchParams({ q: query, b: "", kl: "us-en" }).toString();
+    const res = await fetch("https://html.duckduckgo.com/html/", {
+      method: "POST",
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
+        Referer: "https://duckduckgo.com/",
       },
+      body,
     });
+
+    if (!res.ok) {
+      console.error("DuckDuckGo search HTTP error:", res.status);
+      return [];
+    }
+
     const html = await res.text();
+    const $ = cheerio.load(html);
     const results = [];
 
-    const titleMatches = [
-      ...html.matchAll(/class="result__a"[^>]*>([\s\S]*?)<\/a>/g),
-    ].map((m) => m[1].replace(/<[^>]*>/g, "").trim());
+    // Try multiple selector strategies to handle DuckDuckGo HTML variations
+    const resultContainers = $(
+      ".result, [class*='result__body'], .web-result, .nrn-react-div"
+    );
 
-    let i = 0;
-    for (const match of html.matchAll(
-      /class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g
-    )) {
-      if (results.length >= maxResults) break;
-      const snippet = match[1].replace(/<[^>]*>/g, "").trim();
+    resultContainers.each((_, el) => {
+      if (results.length >= maxResults) return false;
+
+      // Title: try several known class patterns
+      const titleEl =
+        $(el).find(".result__a, .result__title a, [data-testid='result-title-a'], h2 a").first();
+      const snippetEl =
+        $(el).find(".result__snippet, [data-result='snippet'], .result__body, .OgdwYG").first();
+
+      const title = titleEl.text().trim();
+      const snippet = snippetEl.text().trim();
+
       if (snippet) {
-        const title = titleMatches[i] || "";
         results.push(title ? `**${title}**\n${snippet}` : snippet);
+      } else if (title) {
+        // At minimum, include the title if no snippet
+        results.push(`**${title}**`);
       }
-      i++;
+    });
+
+    // Fallback: if Cheerio selectors returned nothing, try raw text extraction
+    if (results.length === 0) {
+      console.warn("DuckDuckGo: Cheerio selectors returned no results, trying fallback.");
+      // Extract any visible text blocks between result separators
+      $(".result__snippet, .snippet, [class*='snippet']").each((_, el) => {
+        if (results.length >= maxResults) return false;
+        const text = $(el).text().trim();
+        if (text.length > 20) results.push(text);
+      });
     }
+
     return results;
   } catch (err) {
     console.error("DuckDuckGo search error:", err);
