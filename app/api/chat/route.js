@@ -4,7 +4,7 @@ import { ChromaClient } from "chromadb";
 import OpenAI from "openai";
 import { createHash } from "crypto";
 import { checkRateLimit } from "@/lib/ratelimit";
-import * as cheerio from "cheerio";
+
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,58 +36,55 @@ function makeEmbeddingFn(openai) {
 
 async function webSearch(query, maxResults = 6) {
   try {
-    const url = `https://www.bing.com/search?q=${encodeURIComponent(query)}&count=${maxResults + 2}`;
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "identity",
-      },
-    });
-
-    if (!res.ok) {
-      console.error("[WebSearch] Bing HTTP error:", res.status);
+    const apiKey = process.env.SERP_API_KEY;
+    if (!apiKey) {
+      console.error("[WebSearch] SERP_API_KEY is not set in environment variables.");
       return [];
     }
 
-    const html = await res.text();
-    const $ = cheerio.load(html);
-    const results = [];
-
-    // Bing organic results live inside li.b_algo
-    $("li.b_algo").each((_, el) => {
-      if (results.length >= maxResults) return false;
-
-      const title = $(el).find("h2 a").first().text().trim();
-      // Bing snippets are in .b_caption p or .b_caption .b_snippetBigText
-      const snippet =
-        $(el).find(".b_caption p, .b_caption .b_snippetBigText").first().text().trim() ||
-        $(el).find(".b_caption").first().text().trim();
-
-      if (snippet) {
-        results.push(title ? `**${title}**\n${snippet}` : snippet);
-      } else if (title) {
-        results.push(`**${title}**`);
-      }
+    const res = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ q: query, num: maxResults }),
     });
 
-    // Fallback: try alternate Bing selectors if b_algo yielded nothing
-    if (results.length === 0) {
-      console.warn("[WebSearch] Primary Bing selectors empty, trying fallback.");
-      $(".b_ans, .b_top, .b_xlText, .b_paractl").each((_, el) => {
-        if (results.length >= maxResults) return false;
-        const text = $(el).text().trim();
-        if (text.length > 30) results.push(text.slice(0, 500));
-      });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.error(`[WebSearch] Serper API error ${res.status}:`, errText);
+      return [];
     }
 
-    console.log(`[WebSearch] Bing returned ${results.length} results for "${query}"`);
+    const data = await res.json();
+    const results = [];
+
+    // Answer box (direct answer for factual queries)
+    if (data.answerBox) {
+      const ab = data.answerBox;
+      const text = ab.answer || ab.snippet || ab.snippetHighlighted?.join(" ") || "";
+      if (text) results.push(`**${ab.title || "Answer"}**\n${text}`);
+    }
+
+    // Knowledge graph
+    if (data.knowledgeGraph?.description && results.length < maxResults) {
+      results.push(`**${data.knowledgeGraph.title}**\n${data.knowledgeGraph.description}`);
+    }
+
+    // Organic results
+    for (const item of data.organic || []) {
+      if (results.length >= maxResults) break;
+      const snippet = item.snippet || "";
+      if (snippet) {
+        results.push(`**${item.title}**\n${snippet}`);
+      }
+    }
+
+    console.log(`[WebSearch] Serper returned ${results.length} results for "${query}"`);
     return results;
   } catch (err) {
-    console.error("[WebSearch] Bing search error:", err);
+    console.error("[WebSearch] Serper error:", err);
     return [];
   }
 }

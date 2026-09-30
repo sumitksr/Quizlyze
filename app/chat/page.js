@@ -74,7 +74,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "👋 Hello! Choose a mode:\n\n📄 **PDF Chat** — upload a document and ask questions about it using RAG + Chroma\n🔍 **Web Search** — I'll search the web for real-time context before answering",
+      content: "👋 Hello! Choose a mode:\n\n📄 **PDF Chat** — upload a document and ask questions about it using RAG + Chroma\n🔍 **Web Search** — I'll search Google for real-time context before answering",
     },
   ]);
   const [input, setInput] = useState("");
@@ -273,7 +273,7 @@ export default function ChatPage() {
         content:
           newMode === "pdf"
             ? "📄 **PDF mode** — Upload a PDF and I'll answer questions using only its content via RAG + Chroma."
-            : "🔍 **Web Search mode** — Ask me anything and I'll search the web for real-time context.",
+            : "🔍 **Web Search mode** — Ask me anything and I'll search Google for real-time context.",
       },
     ]);
   };
@@ -407,8 +407,8 @@ export default function ChatPage() {
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
                 </div>
-                <p className="web-mode-title">Bing Web Search</p>
-                <p className="web-mode-desc">Your question will be searched on Bing. Top results are used as context before answering. No API key needed.</p>
+                <p className="web-mode-title">Google Search</p>
+                <p className="web-mode-desc">Your question is searched on Google via Serper. Top results are used as context before answering.</p>
               </div>
             )}
 
@@ -450,15 +450,15 @@ export default function ChatPage() {
                   <div className="info-card info-card-blue">
                     <div className="info-card-dot info-card-dot-blue" />
                     <div>
-                      <p className="info-card-title">Bing Web Search</p>
-                      <p className="info-card-body">Fetches top Bing results for your query, uses them as context for the LLM.</p>
+                      <p className="info-card-title">Google Search</p>
+                      <p className="info-card-body">Fetches top Google results for your query via Serper, used as context for the LLM.</p>
                     </div>
                   </div>
                   <div className="info-card info-card-purple">
                     <div className="info-card-dot info-card-dot-purple" />
                     <div>
-                      <p className="info-card-title">No API Key Needed</p>
-                      <p className="info-card-body">Search works out of the box — no API key or account required.</p>
+                      <p className="info-card-title">Real-time Results</p>
+                      <p className="info-card-body">Live Google search results — answer boxes, knowledge graphs, and organic links included.</p>
                     </div>
                   </div>
                 </>
