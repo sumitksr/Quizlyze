@@ -47,8 +47,8 @@ async function main() {
     process.exit(1);
   }
   console.log(green("✓ Env vars loaded"));
-  console.log(dim(`  URL:   ${url}`));
-  console.log(dim(`  Token: ${token.slice(0, 12)}...${token.slice(-6)}\n`));
+  // console.log(dim(`  URL:   ${url}`));
+  // console.log(dim(`  Token: ${token.slice(0, 12)}...${token.slice(-6)}\n`));
 
   // 2. Test Redis connection
   const redis = new Redis({ url, token });
