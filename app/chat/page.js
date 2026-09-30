@@ -619,9 +619,12 @@ export default function ChatPage() {
       <style jsx global>{`
         body {
           overflow: hidden !important;
-          height: 100vh !important;
+          height: 100dvh !important; /* Fixes mobile browser cutoff */
           display: flex;
           flex-direction: column;
+        }
+        @supports not (height: 100dvh) {
+          body { height: 100vh !important; }
         }
         main {
           flex: 1;
@@ -1397,6 +1400,8 @@ export default function ChatPage() {
         @media (max-width: 640px) {
           .chat-header-title { font-size: 0.85rem; max-width: 180px; }
           .message-bubble { max-width: 90%; }
+          .chat-input-wrapper { padding: 12px; gap: 8px; }
+          .chat-messages { padding: 12px; }
         }
       `}</style>
     </>
