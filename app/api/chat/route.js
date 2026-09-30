@@ -34,26 +34,22 @@ function makeEmbeddingFn(openai) {
   };
 }
 
-async function duckDuckGoSearch(query, maxResults = 6) {
+async function webSearch(query, maxResults = 6) {
   try {
-    // POST to the legacy HTML endpoint — more reliable than GET for server-side use
-    const body = new URLSearchParams({ q: query, b: "", kl: "us-en" }).toString();
-    const res = await fetch("https://html.duckduckgo.com/html/", {
-      method: "POST",
+    const url = `https://www.bing.com/search?q=${encodeURIComponent(query)}&count=${maxResults + 2}`;
+    const res = await fetch(url, {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "no-cache",
-        Referer: "https://duckduckgo.com/",
+        "Accept-Encoding": "identity",
       },
-      body,
     });
 
     if (!res.ok) {
-      console.error("DuckDuckGo search HTTP error:", res.status);
+      console.error("[WebSearch] Bing HTTP error:", res.status);
       return [];
     }
 
@@ -61,45 +57,37 @@ async function duckDuckGoSearch(query, maxResults = 6) {
     const $ = cheerio.load(html);
     const results = [];
 
-    // Try multiple selector strategies to handle DuckDuckGo HTML variations
-    const resultContainers = $(
-      ".result, [class*='result__body'], .web-result, .nrn-react-div"
-    );
-
-    resultContainers.each((_, el) => {
+    // Bing organic results live inside li.b_algo
+    $("li.b_algo").each((_, el) => {
       if (results.length >= maxResults) return false;
 
-      // Title: try several known class patterns
-      const titleEl =
-        $(el).find(".result__a, .result__title a, [data-testid='result-title-a'], h2 a").first();
-      const snippetEl =
-        $(el).find(".result__snippet, [data-result='snippet'], .result__body, .OgdwYG").first();
-
-      const title = titleEl.text().trim();
-      const snippet = snippetEl.text().trim();
+      const title = $(el).find("h2 a").first().text().trim();
+      // Bing snippets are in .b_caption p or .b_caption .b_snippetBigText
+      const snippet =
+        $(el).find(".b_caption p, .b_caption .b_snippetBigText").first().text().trim() ||
+        $(el).find(".b_caption").first().text().trim();
 
       if (snippet) {
         results.push(title ? `**${title}**\n${snippet}` : snippet);
       } else if (title) {
-        // At minimum, include the title if no snippet
         results.push(`**${title}**`);
       }
     });
 
-    // Fallback: if Cheerio selectors returned nothing, try raw text extraction
+    // Fallback: try alternate Bing selectors if b_algo yielded nothing
     if (results.length === 0) {
-      console.warn("DuckDuckGo: Cheerio selectors returned no results, trying fallback.");
-      // Extract any visible text blocks between result separators
-      $(".result__snippet, .snippet, [class*='snippet']").each((_, el) => {
+      console.warn("[WebSearch] Primary Bing selectors empty, trying fallback.");
+      $(".b_ans, .b_top, .b_xlText, .b_paractl").each((_, el) => {
         if (results.length >= maxResults) return false;
         const text = $(el).text().trim();
-        if (text.length > 20) results.push(text);
+        if (text.length > 30) results.push(text.slice(0, 500));
       });
     }
 
+    console.log(`[WebSearch] Bing returned ${results.length} results for "${query}"`);
     return results;
   } catch (err) {
-    console.error("DuckDuckGo search error:", err);
+    console.error("[WebSearch] Bing search error:", err);
     return [];
   }
 }
@@ -137,17 +125,20 @@ function rateLimitResponse(result) {
  * Rate limited: 10 req/min · 40 req/hr per IP
  */
 export async function POST(request) {
+  try {
   // ── Rate limiting ─────────────────────────────────────────────────────────
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
+    request.ip ||
     "anonymous";
+
+  console.log(`[Chat API] Rate-limit identifier: "${ip}"`);
 
   const rl = await checkRateLimit(ip);
   if (!rl.success) return rateLimitResponse(rl);
 
   // ── Parse body ────────────────────────────────────────────────────────────
-  try {
     const formData   = await request.formData();
     const mode       = formData.get("mode") || "web"; // "pdf" | "web"
     const pdfFile    = formData.get("pdf");
@@ -263,7 +254,7 @@ Respond politely with exactly this message or something similar:
 
     // ── Web search mode ───────────────────────────────────────────────────────
     else {
-      const searchResults = await duckDuckGoSearch(message);
+      const searchResults = await webSearch(message);
       contextBlock = searchResults.length
         ? searchResults.join("\n\n---\n\n")
         : "No search results found.";
