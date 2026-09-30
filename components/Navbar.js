@@ -8,6 +8,7 @@ const navLinks = [
   { href: '/summarize', label: 'Summarize', color: 'indigo' },
   { href: '/quiz', label: 'Generate Quiz', color: 'purple' },
   { href: '/flashcards', label: 'Flashcards', color: 'pink' },
+  { href: '/chat', label: 'Chat', color: 'cyan' },
   { href: '/about', label: 'About', color: 'emerald' },
 ]
 
@@ -47,6 +48,15 @@ const colorMap = {
     mobileBorder: 'border-emerald-500/30',
     mobileGlow: 'hover:shadow-emerald-500/10',
     activeText: 'text-emerald-400',
+  },
+  cyan: {
+    text: 'hover:text-cyan-400',
+    shadow: 'hover:shadow-cyan-500/20',
+    gradientFrom: 'from-cyan-500/10',
+    gradientTo: 'to-sky-500/10',
+    mobileBorder: 'border-cyan-500/30',
+    mobileGlow: 'hover:shadow-cyan-500/10',
+    activeText: 'text-cyan-400',
   },
 }
 

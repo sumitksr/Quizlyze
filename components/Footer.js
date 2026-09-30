@@ -1,7 +1,12 @@
+"use client";
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname === '/chat') return null;
+
   return (
     <footer className="bg-black border-t border-purple-500/30 transition-all transition-slow">
       <div className="max-w-7xl mx-auto px-6 py-16">
