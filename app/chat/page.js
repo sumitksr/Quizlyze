@@ -89,6 +89,9 @@ export default function ChatPage() {
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
   const abortControllerRef = useRef(null);
+  // Caches the Chroma collection ID returned by the server after first upload.
+  // Subsequent messages send this instead of re-uploading the full PDF binary.
+  const pdfCollectionIdRef = useRef(null);
 
   // Auto-scroll: instant during streaming to avoid slide-down jank,
   // smooth only when a brand-new message appears.
@@ -150,6 +153,7 @@ export default function ChatPage() {
   const removePdf = () => {
     setPdfFile(null);
     setPdfName("");
+    pdfCollectionIdRef.current = null; // reset cached collection on PDF removal
     setMessages([
       {
         role: "assistant",
@@ -190,8 +194,15 @@ export default function ChatPage() {
             .map(({ role, content }) => ({ role, content }))
         )
       );
-      if (mode === "pdf" && pdfFile) {
-        formData.append("pdf", pdfFile);
+      if (mode === "pdf") {
+        if (pdfCollectionIdRef.current) {
+          // Reuse cached collection ID — avoids re-uploading the full PDF binary
+          // which would trigger a 413 "Request Entity Too Large" error.
+          formData.append("collectionId", pdfCollectionIdRef.current);
+        } else if (pdfFile) {
+          // First message: upload the raw file so the server can embed it.
+          formData.append("pdf", pdfFile);
+        }
       }
 
       const res = await fetch("/api/chat", {
@@ -207,6 +218,13 @@ export default function ChatPage() {
           throw new Error(`⏱️ Rate limit reached. ${wait}`);
         }
         throw new Error(errData.error || `Server error ${res.status}`);
+      }
+
+      // Cache the collection ID returned by the server so subsequent messages
+      // send only this string instead of the full PDF binary (avoids 413).
+      const collectionIdHeader = res.headers.get("X-Collection-Id");
+      if (collectionIdHeader && mode === "pdf") {
+        pdfCollectionIdRef.current = collectionIdHeader;
       }
 
       const reader = res.body.getReader();
@@ -267,6 +285,7 @@ export default function ChatPage() {
 
   const switchMode = (newMode) => {
     setMode(newMode);
+    pdfCollectionIdRef.current = null; // reset cached collection when switching modes
     setMessages([
       {
         role: "assistant",

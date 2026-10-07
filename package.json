@@ -21,6 +21,7 @@
     "googleapis": "^159.0.0",
     "ioredis": "^6.0.0",
     "langchain": "^1.5.14",
+    "langsmith": "^0.10.8",
     "next": "^16.2.9",
     "openai": "^6.45.0",
     "pdf-parse": "^1.1.1",

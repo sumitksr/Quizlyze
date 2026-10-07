@@ -4,6 +4,7 @@ import { ChromaClient } from "chromadb";
 import OpenAI from "openai";
 import { createHash } from "crypto";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { ChatOpenAI } from "@langchain/openai";
 
 
 export const runtime = "nodejs";
@@ -268,7 +269,15 @@ ${contextBlock}`;
     }
 
     // ── Stream ────────────────────────────────────────────────────────────────
-    const messages = [
+    // ChatOpenAI auto-traces to LangSmith via LANGSMITH_TRACING env var
+    const chatModel = new ChatOpenAI({
+      model: "gpt-4o-mini",
+      temperature: 0.1,
+      streaming: true,
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const lcMessages = [
       { role: "system", content: systemPrompt },
       ...history.slice(-10),
       { role: "user", content: message },
@@ -278,14 +287,9 @@ ${contextBlock}`;
     const stream  = new ReadableStream({
       async start(controller) {
         try {
-          const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages,
-            temperature: 0.1,
-            stream: true,
-          });
-          for await (const chunk of completion) {
-            const text = chunk.choices[0]?.delta?.content ?? "";
+          const lcStream = await chatModel.stream(lcMessages);
+          for await (const chunk of lcStream) {
+            const text = chunk.content;
             if (text) controller.enqueue(encoder.encode(text));
           }
           controller.close();
