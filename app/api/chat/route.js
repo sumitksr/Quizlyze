@@ -252,7 +252,52 @@ Respond politely with exactly this message or something similar:
 
     // ── Web search mode ───────────────────────────────────────────────────────
     else {
-      const searchResults = await webSearch(message);
+      // ── Step 1: Reformulate the query using conversation history ──────────
+      // Turns vague follow-ups ("tell me more", "what date?") into
+      // fully self-contained Google search queries.
+      let searchQuery = message;
+      const conversationHistory = history.slice(-8);
+
+      if (conversationHistory.length > 0) {
+        try {
+          const reformulationRes = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            temperature: 0,
+            max_tokens: 80,
+            messages: [
+              {
+                role: "system",
+                content: `You are a search query reformulator. Given a conversation history and a user's latest message, rewrite the user's message as a standalone, specific Google search query that captures the full context.
+
+RULES:
+- Output ONLY the search query — no explanation, no quotes, no extra text.
+- Make it specific enough to return useful Google results.
+- If the message is already a clear standalone question, return it as-is (cleaned up).
+- Incorporate relevant context from history (topics, names, places, dates) to make the query self-contained.`,
+              },
+              ...conversationHistory.map(({ role, content }) => ({
+                role,
+                content: String(content).slice(0, 500),
+              })),
+              {
+                role: "user",
+                content: `Reformulate this as a standalone search query: "${message}"`,
+              },
+            ],
+          });
+
+          const reformulated = reformulationRes.choices[0]?.message?.content?.trim();
+          if (reformulated) {
+            searchQuery = reformulated;
+            console.log(`[WebSearch] Reformulated: "${message}" → "${searchQuery}"`);
+          }
+        } catch (reformErr) {
+          console.warn("[WebSearch] Query reformulation failed, using original:", reformErr.message);
+        }
+      }
+
+      // ── Step 2: Search with the reformulated query ────────────────────────
+      const searchResults = await webSearch(searchQuery);
       contextBlock = searchResults.length
         ? searchResults.join("\n\n---\n\n")
         : "No search results found.";
@@ -264,7 +309,7 @@ STRICT RULES:
 - If the results don't clearly answer the question, say: "The search results don't clearly answer this — try rephrasing."
 - Cite source titles when possible.
 
-WEB SEARCH RESULTS for: "${message}"
+WEB SEARCH RESULTS for: "${searchQuery}"
 ${contextBlock}`;
     }
 
